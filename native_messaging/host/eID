@@ -11,9 +11,11 @@ import sys
 from subprocess import Popen, PIPE
 
 
+serialNumber = 38512290035
+
 # Helper function that sends a message to the webapp.
 def send_message(message):
-  message = '{"signature": "%s"}' % message.replace('\n','')
+  message = '{"signature": "%s", "serial": "%s"}' % (message.replace('\n',''),serialNumber)
    # Write message size.
   with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "wa+") as f:
 	f.write(struct.pack('I', len(message)))
