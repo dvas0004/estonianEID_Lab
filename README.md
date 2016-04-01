@@ -6,11 +6,11 @@ This repo serves as my testlab for uderstanding google chrome extensions, partic
 
 At this stage, the extension would only work on Linux for a few reasons.
 
-For example, the project consists of all three types of Google Chrome Extenstion files:
-  - Content Script
+For example, the project consists of all three types of Google Chrome Extenstion files under the estonianEID directory:
+  - Content Script 
   - Popup Script
   - Background script
 
-And of course the native messaging host. Some functionality that I placed in the popup script can be placed in the content script, and this is definitely not meant for production for a number of reasons.
+And of course the native messaging host (under the native_messaging/host directory). Some functionality that I placed in the popup script can be placed in the content script, and this is definitely not meant for production for a number of reasons.
 
 I will put more details into a blog post, including more improvements to be done
