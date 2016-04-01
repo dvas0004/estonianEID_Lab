@@ -1,0 +1,9 @@
+{
+  "name": "vassallo.david.estonia.eid",
+  "description": "Chrome Native Messaging API for Ubuntu OpenSC PKCS 15",
+  "path": "/home/dvas0004/Dropbox/chrome extension/native_messaging/host/eID",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://sliuoisuchsyuabsncijqwoqiuyficjpzcnizpuhcizudy/"
+  ]
+}
