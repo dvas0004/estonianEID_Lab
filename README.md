@@ -14,3 +14,10 @@ For example, the project consists of all three types of Google Chrome Extenstion
 And of course the native messaging host (under the native_messaging/host directory). Some functionality that I placed in the popup script can be placed in the content script, and this is definitely not meant for production for a number of reasons.
 
 I will put more details into a blog post, including more improvements to be done
+
+Associated Links:
+-----------------
+  * [Video Demo Part 1](https://youtu.be/BUwPZeyKuNU)
+  * [Video Demo Part 2](https://youtu.be/Nx-jRPIAyEM)
+  * [Blog Post Part 1](http://blog.davidvassallo.me/2016/04/01/signing-gmail-messages-with-the-estonian-eid-pki-card-part-1/)
+  * [Blog Post Part 2](http://blog.davidvassallo.me/2016/04/28/signing-gmail-messages-with-the-estonian-eid-pki-card-part-2/)
