@@ -3,33 +3,50 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# A simple native messaging host. Shows a Tkinter dialog with incoming messages
-# that also allows to send message back to the webapp.
-
 import struct
 import sys
 from subprocess import Popen, PIPE
+import ldap
 
 
 serialNumber = 38512290035
 
 # Helper function that sends a message to the webapp.
 def send_message(message):
-  message = '{"signature": "%s", "serial": "%s"}' % (message.replace('\n',''),serialNumber)
+  message = '{"type":"s", "signature": "%s", "serial": "%s"}' % (message.replace('\n',''),serialNumber)
    # Write message size.
-  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "wa+") as f:
+  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
 	f.write(struct.pack('I', len(message)))
   sys.stdout.write(struct.pack('I', len(message)))
   # Write the message itself.
   sys.stdout.write(message)
-  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "wa+") as f:
+  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
 	f.write(message)
   sys.stdout.flush()
+
+
+def send_verification(message):
+  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+	    f.write('sneding verification')
+  message = '{"type":"r", "result": "%s"}' % message.replace('\n','')
+   # Write message size.
+  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+	f.write(struct.pack('I', len(message)))
+  sys.stdout.write(struct.pack('I', len(message)))
+  # Write the message itself.
+  sys.stdout.write(message)
+  with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+	f.write(message)
+  sys.stdout.flush()
+
 
 
 # Thread that reads messages from the webapp.
 def read_thread_func():
   while 1:
+
+    with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "w+") as f:
+	    f.write('waiting for length')
     # Read the message length (first 4 bytes).
     text_length_bytes = sys.stdin.read(4)
 
@@ -40,15 +57,79 @@ def read_thread_func():
     # Unpack message length as 4 byte integer.
     text_length = struct.unpack('i', text_length_bytes)[0]
 
+    with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+	    f.write('waiting for text')
+
     # Read the text (JSON object) of the message.
     text = sys.stdin.read(text_length).decode('utf-8')
-    # Sign the text
-    with open("/tmp/toSign", "w+") as f:
-	f.write(text)
+    with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+	    f.write('got text: '+text + '\n' )
 
-    p = Popen(["bash", "/home/dvas0004/Dropbox/chrome extension/native_messaging/host/signer.sh" ], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    output, err = p.communicate()
-    send_message(output)
+
+    if (text.startswith('{"text":"-----BEGIN SIGNED MESSAGE-----')):
+        #verify the text
+        with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+            f.write('in verifier\n')
+
+        textParts = text.split('-----')
+
+
+        emailText = textParts[2].strip('\\n')
+        emailText = '{"text":"'+emailText+'"}'
+        with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+            f.write('emailText: '+emailText+'\n')
+        messageDetails = textParts[4]
+
+
+
+        messageDetailsParts = messageDetails.split(' ')
+        senderSerial = messageDetailsParts[2].replace('\\nSigned','')
+
+        with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+            f.write('serial: '+senderSerial+'\n')
+
+        signedHash = messageDetailsParts[4].rstrip('"}')
+
+
+        ld = ldap.initialize('ldap://ldap.sk.ee:389')
+        ld.simple_bind_s()
+        basedn="ou=digital signature, o=ESTEID (DIGI-ID E-RESIDENT), c=EE"
+        filter="serialNumber="+senderSerial
+        with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+            f.write('ldap filter: '+filter+'\n')
+        results = ld.search_s(basedn,ldap.SCOPE_SUBTREE,filter)
+
+
+
+        with open('/tmp/sender_cer.der', 'wb+') as f:
+            f.write(results[0][1]['userCertificate;binary'][0])
+
+        with open("/home/dvas0004/Dropbox/chrome extension/native_messaging/host/log.txt", "a") as f:
+            f.write('mark\n')
+
+        with open('/tmp/sender_email', 'w+') as f:
+            f.write(emailText)
+
+        with open('/tmp/sender_hash', 'w+') as f:
+            f.write(signedHash)
+
+
+        p = Popen(["bash", "/home/user/Dropbox/chrome extension/native_messaging/host/verifier.sh" ], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = p.communicate()
+        send_verification(output)
+
+    else:
+
+        # Sign the text
+        with open("/tmp/toSign", "w+") as f:
+            f.write(text)
+
+        p = Popen(["bash", "/home/user/Dropbox/chrome extension/native_messaging/host/signer.sh" ], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = p.communicate()
+        send_message(output)
+
+
+
 
 
 def Main():
