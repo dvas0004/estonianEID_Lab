@@ -61,6 +61,8 @@ function renderStatus(statusText) {
 
 document.addEventListener('DOMContentLoaded', function() {
     
+    console.log('Dom Loaded');
+    
     //the below bever fired even when using the same - had to use the .extension func instead... weird
   chrome.runtime.onMessage.addListener(
       function(request, sender, sendResponse) {

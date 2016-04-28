@@ -2,8 +2,8 @@
   "manifest_version": 2,
 
   "name": "Estonia eID Lab",
-  "description": "This extension allows you to sign text using your Estonian E-ID ",
-  "version": "0.1",
+  "description": "DEV: This extension allows you to sign text using your Estonian E-ID ",
+  "version": "0.2",
 
   "browser_action": {
     "default_icon": "icon.png",
